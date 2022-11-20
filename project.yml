@@ -1,0 +1,26 @@
+name: focus
+
+options:
+  bundleIdPrefix: io.github.takeiteasy
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "12.0"
+
+settings:
+  GCC_C_LANGUAGE_STANDARD: c11
+  CLANG_WARN_DOCUMENTATION_COMMENTS: false
+
+targets:
+  focus:
+    type: application
+    platform: macOS
+    info:
+      path: Info.plist
+    sources:
+      - path: focus.m
+      - path: resources/
+        type: folder
+    dependencies:
+        - sdk: Cocoa.framework
+    settings:
+        OTHER_CFLAGS: ["-DFOCUS_APP"]
