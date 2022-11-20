@@ -28,34 +28,23 @@
 
 #import <Cocoa/Cocoa.h>
 
-#define RES_PATH  "resources"
-#define RES_MERGE(X,Y) (X "/" Y)
 #if defined(FOCUS_APP)
-#define RES(X) [[NSBundle mainBundle] pathForResource:@RES_MERGE(RES_PATH, X) ofType:nil]
-#define readFileContents(X) [NSString stringWithContentsOfURL:[NSURL fileURLWithPath:X] encoding:NSASCIIStringEncoding error:&error]
+#define SCRIPT(X) [NSString stringWithContentsOfURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@("resources/" #X ".scpt") ofType:nil]] encoding:NSASCIIStringEncoding error:&error]
 #else
-#define RES(X) (RES_MERGE(RES_PATH, X))
+#define SCRIPT(X) [NSString stringWithUTF8String:X]
 
-NSString* readFileContents(const char* path) {
-    FILE *file = fopen(path, "rb");
-    if (!file) {
-        fprintf(stderr, "fopen \"%s\" failed: %d %s\n", path, errno, strerror(errno));
-        exit(1);
-    }
-    
-    fseek(file, 0, SEEK_END);
-    size_t length = ftell(file);
-    rewind(file);
-    
-    char *data = (char*)calloc(length + 1, sizeof(char));
-    fread(data, 1, length, file);
-    fclose(file);
-    
-    id ret = [[NSString alloc] initWithUTF8String:data];
-    free(data);
-    
-    return ret;
-}
+static const char *running =
+"tell application \"System Events\"\n"
+"   set frontApp to first application process whose frontmost is true\n"
+"   set frontAppName to name of frontApp\n"
+"end tell\n"
+"return frontAppName";
+static const char *focus =
+"tell application \"System Events\"\n"
+"   tell application \"%s\"\n"
+"       activate\n"
+"   end tell\n"
+"end tell\n";
 
 #include <stdlib.h>
 #include <getopt.h>
@@ -110,14 +99,15 @@ static int blur = 20;
         NSError *error = NULL;
         NSDictionary *osaError = nil;
         if (!appName) {
-            NSAppleScript* runningScript = [[NSAppleScript alloc] initWithSource:readFileContents(RES("running.scpt"))];
+            NSAppleScript* runningScript = [[NSAppleScript alloc] initWithSource:SCRIPT(running)];
             if (error)
                 NSLog(@"ERROR! Failed to load running.scpt! %@", error);
             else {
                 NSAppleEventDescriptor *result = [runningScript executeAndReturnError:&osaError];
                 if (!result)
                     NSLog(@"ERROR! Failed to execute running.scpt! %@", osaError);
-                appName = [[result stringValue] UTF8String];
+                else
+                    appName = [[result stringValue] UTF8String];
             }
             if (!appName)
                 NSLog(@"WARNING! No application name passed!");
@@ -157,7 +147,7 @@ static int blur = 20;
 -(void)applicationWillFinishLaunching:(NSNotification *)notification {
     NSError *error = NULL;
     NSDictionary *osaError = nil;
-    NSAppleScript* focusScript = [[NSAppleScript alloc] initWithSource:[NSString stringWithFormat:readFileContents(RES("focus.scpt")), appName]];
+    NSAppleScript* focusScript = [[NSAppleScript alloc] initWithSource:[NSString stringWithFormat:SCRIPT(focus), appName]];
     if (error) {
         NSLog(@"ERROR! Failed to load focus.scpt! %@", error);
         [NSApp terminate:nil];
