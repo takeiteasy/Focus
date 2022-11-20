@@ -20,7 +20,7 @@ usage: focus -a [app] [options]
     -h/--help     Show this message
 ```
 
-To build, run ```clang focus.m -framework Cocoa -o focus```
+To build the CLI program, run ```make```. To build the app, run ```make app```. Or build the Xcode project with [xcodegen](https://github.com/yonaskolb/XcodeGen) to build the .app version. The app version brings up a dialog to select an app to focus.
 
 ## License
 ```

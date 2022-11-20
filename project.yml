@@ -18,7 +18,7 @@ targets:
       path: Info.plist
     sources:
       - path: focus.m
-      - path: resources/
+      - path: Resources/
         type: folder
     dependencies:
         - sdk: Cocoa.framework

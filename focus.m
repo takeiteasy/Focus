@@ -29,7 +29,8 @@
 #import <Cocoa/Cocoa.h>
 
 #if defined(FOCUS_APP)
-#define SCRIPT(X) [NSString stringWithContentsOfURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@("resources/" #X ".scpt") ofType:nil]] encoding:NSASCIIStringEncoding error:&error]
+#define SCRIPT(X) [NSString stringWithContentsOfURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@("Resources/" #X ".scpt") ofType:nil]] encoding:NSASCIIStringEncoding error:&error]
+static const char *appName = "";
 #else
 #define SCRIPT(X) [NSString stringWithUTF8String:X]
 
@@ -76,6 +77,8 @@ static void usage(void) {
 #if !defined(CLAMP)
 #define CLAMP(n, min, max) (MIN(MAX(n, min), max))
 #endif
+
+static const char *appName = NULL;
 #endif
 
 typedef void* CGSConnection;
@@ -89,7 +92,6 @@ extern CGSConnection CGSDefaultConnectionForThread(void);
 }
 @end
 
-static const char *appName = NULL;
 static double r = .2, g = .2, b = .2, a = .5;
 static int blur = 20;
 
@@ -147,7 +149,11 @@ static int blur = 20;
 -(void)applicationWillFinishLaunching:(NSNotification *)notification {
     NSError *error = NULL;
     NSDictionary *osaError = nil;
+#if defined(FOCUS_APP)
+    NSAppleScript* focusScript = [[NSAppleScript alloc] initWithSource:SCRIPT(focus)];
+#else
     NSAppleScript* focusScript = [[NSAppleScript alloc] initWithSource:[NSString stringWithFormat:SCRIPT(focus), appName]];
+#endif
     if (error) {
         NSLog(@"ERROR! Failed to load focus.scpt! %@", error);
         [NSApp terminate:nil];
