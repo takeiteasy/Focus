@@ -20,7 +20,7 @@ usage: focus -a [app] [options]
     -h/--help     Show this message
 ```
 
-To build the CLI program, run ```make```. To build the app, run ```make app```. Or build the Xcode project with [xcodegen](https://github.com/yonaskolb/XcodeGen) to build the .app version. The app version brings up a dialog to select an app to focus.
+To build the CLI program, run ```make```. To build the app, run ```make app``` or build the Xcode project with [xcodegen](https://github.com/yonaskolb/XcodeGen). The app version brings up a dialog to select an app to focus instead of arguments.
 
 ## License
 ```
